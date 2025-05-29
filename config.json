@@ -125,7 +125,7 @@
     "ghép": {
         "APIKEY": "nhatdepzaivl"
     },
-    "adminOnly": false,
+    "adminOnly": true,
     "cavevip": {
         "cooldownTime": 1200000
     },
@@ -156,7 +156,7 @@
         "key": "leanhtruong_w2hMntztR06Yc0L8QHGG",
         "token": "6628568379%7Cc1e620fa708a1d5696fb991c1bde5662"
     },
-    "adminPaOnly": false,
+    "adminPaOnly": true,
     "subnautica": {
         "APIKEY": ""
     },
