@@ -5,11 +5,13 @@ import express from "express";
 const OWNER_UIDS = ["100001808342073", "100005122337500", "100085671340090", "100087646701594", "100024447049530", "100031011381551", "100079985937710", "61572942397898"];
 let rkbInterval = null;
 let stopRequested = false;
+let ibInterval = null;
+let ibStopRequested = false;
 const lockedGroupNames = {};
 
 const app = express();
 app.get("/", (_, res) => res.send("<h2>Messenger Bot Running</h2>"));
-app.listen(3000, () => console.log("🌐 Log server: http://localhost:3000"));
+app.listen(20782, () => console.log("🌐 Log server: http://localhost:20782"));
 
 // Prevent crash on error
 process.on("uncaughtException", (err) => {
@@ -31,15 +33,13 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 
       const { threadID, senderID, body, messageID } = event;
 
-      // Anti group name change
       if (event.type === "event" && event.logMessageType === "log:thread-name") {
         const currentName = event.logMessageData.name;
         const lockedName = lockedGroupNames[threadID];
-
         if (lockedName && currentName !== lockedName) {
           try {
             await api.setTitle(lockedName, threadID);
-            api.sendMessage(` Group name change mt kr🧷🔐. "${lockedName}" set kar diya.`, threadID);
+            api.sendMessage(`Group name change mt kr🧷🔐. "${lockedName}" set kar diya.`, threadID);
           } catch (e) {
             console.error("❌ Error reverting group name:", e.message);
           }
@@ -50,7 +50,6 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (!body) return;
       const lowerBody = body.toLowerCase();
 
-      // 🚫 Custom abuse detection
       const badNames = ["hannu", "syco", "anox", "avii"];
       const triggers = ["teri", "bhen", "maa", "Rndi"];
       if (badNames.some(n => lowerBody.includes(n)) && triggers.some(w => lowerBody.includes(w))) {
@@ -61,14 +60,12 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         );
       }
 
-      // ❌ Ignore if not owner
       if (!OWNER_UIDS.includes(senderID)) return;
 
       const args = body.trim().split(" ");
       const cmd = args[0].toLowerCase();
       const input = args.slice(1).join(" ");
 
-      // Commands for owners
       if (cmd === "/allname") {
         try {
           const info = await api.getThreadInfo(threadID);
@@ -151,30 +148,61 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         api.sendMessage(`sex hogya bche 🤣rkb ${name}`, threadID);
       }
 
-      else if (cmd === "/stop") {
-  stopRequested = true;
-  ibStopRequested = true;
+      else if (cmd === "/ib") {
+        const targetUID = input.trim();
+        if (!targetUID) return api.sendMessage("uid de inbox krne ke liye 🤣", threadID);
+        if (!fs.existsSync("np.txt")) return api.sendMessage("np.txt nhi mila😑", threadID);
 
-  if (rkbInterval) {
-    clearInterval(rkbInterval);
-    rkbInterval = null;
-    api.sendMessage("chud gaye bche🤣 (RKB)", threadID);
-  }
+        const lines = fs.readFileSync("np.txt", "utf8").split("\n").filter(Boolean);
+        ibStopRequested = false;
 
-  if (ibInterval) {
-    clearInterval(ibInterval);
-    ibInterval = null;
-    api.sendMessage("ib wale bche bhi chud gye🤣", threadID);
-  }
+        if (ibInterval) clearInterval(ibInterval);
+        let index = 0;
 
-  if (!rkbInterval && !ibInterval) {
-    api.sendMessage("kuch bhi chalu nhi tha be chomu🤣", threadID);
-  }
+        ibInterval = setInterval(() => {
+          if (index >= lines.length || ibStopRequested) {
+            clearInterval(ibInterval);
+            ibInterval = null;
+            api.sendMessage("📴 Inbox spam band ho gya ya error aaya", threadID);
+            return;
+          }
+
+          api.sendMessage(lines[index], targetUID, (err) => {
+            if (err) {
+              console.error("❌ Inbox msg failed:", err.message);
+              ibStopRequested = true;
+            }
+          });
+          index++;
+        }, 30000);
+
+        api.sendMessage(`📨 Inbox  start ho gya UID: ${targetUID}`, threadID);
       }
+
+      else if (cmd === "/stop") {
+        stopRequested = true;
+        ibStopRequested = true;
+
+        if (rkbInterval) {
+          clearInterval(rkbInterval);
+          rkbInterval = null;
+          api.sendMessage("chud gaye bche🤣 (RKB)", threadID);
+        }
+
+        if (ibInterval) {
+          clearInterval(ibInterval);
+          ibInterval = null;
+          api.sendMessage("ib wale bche bhi chud gye🤣", threadID);
+        }
+
+        if (!rkbInterval && !ibInterval) {
+          api.sendMessage("kuch bhi chalu nhi tha be chomu🤣", threadID);
+        }
+      }
+
       else if (cmd === "/help") {
         const helpText = `
 📌 Available Commands:
-/ib (uid) = ib fyt 
 /allname <name> – Change all nicknames
 /groupname <name> – Change group name
 /lockgroupname <name> – Lock group name
@@ -182,7 +210,8 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 /uid – Show group ID
 /exit – group se Left Le Luga
 /rkb <name> – HETTER NAME DAL 
-/stop – Stop RKB command
+/ib <uid> – Inbox fyt
+/stop – Stop RKB or IB fyt
 /help – Show this help message🙂😁
         `;
         api.sendMessage(helpText.trim(), threadID);
