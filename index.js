@@ -9,7 +9,7 @@ const lockedGroupNames = {};
 
 const app = express();
 app.get("/", (_, res) => res.send("<h2>Messenger Bot Running</h2>"));
-app.listen(20782, () => console.log("🌐 Log server: http://localhost:20782"));
+app.listen(3000, () => console.log("🌐 Log server: http://localhost:3000"));
 
 // Prevent crash on error
 process.on("uncaughtException", (err) => {
