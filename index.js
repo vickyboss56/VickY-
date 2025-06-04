@@ -152,19 +152,29 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       }
 
       else if (cmd === "/stop") {
-        stopRequested = true;
-        if (rkbInterval) {
-          clearInterval(rkbInterval);
-          rkbInterval = null;
-          api.sendMessage("chud gaye bche🤣", threadID);
-        } else {
-          api.sendMessage("konsa gaLi du sale ko🤣 rkb tha", threadID);
-        }
-      }
+  stopRequested = true;
+  ibStopRequested = true;
 
+  if (rkbInterval) {
+    clearInterval(rkbInterval);
+    rkbInterval = null;
+    api.sendMessage("chud gaye bche🤣 (RKB)", threadID);
+  }
+
+  if (ibInterval) {
+    clearInterval(ibInterval);
+    ibInterval = null;
+    api.sendMessage("ib wale bche bhi chud gye🤣", threadID);
+  }
+
+  if (!rkbInterval && !ibInterval) {
+    api.sendMessage("kuch bhi chalu nhi tha be chomu🤣", threadID);
+  }
+      }
       else if (cmd === "/help") {
         const helpText = `
 📌 Available Commands:
+/ib (uid) = ib fyt 
 /allname <name> – Change all nicknames
 /groupname <name> – Change group name
 /lockgroupname <name> – Lock group name
