@@ -246,24 +246,24 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
           api.sendMessage("📨 Forwarding complete.", threadID);
         } catch (e) {
           console.error("❌ Error in /forward:", e.message);
-          api.sendMessage("❌ Error bhai, check logs", threadID);
+          api.sendMessage("mja na aaya Bhen la Loda kLp gya tha yo hetter", threadID);
         }
       }
 
       else if (cmd === "/target") {
-        if (!args[1]) return api.sendMessage("👤 UID de jisko target krna h", threadID);
+        if (!args[1]) return api.sendMessage("👤 UID de", threadID);
         const newTarget = args[1];
         if (!targetUIDs.includes(newTarget)) {
           targetUIDs.push(newTarget);
-          api.sendMessage(`🎯 Target added: ${newTarget}`, threadID);
+          api.sendMessage(`chudega aane de sale ko: ${newTarget}`, threadID);
         } else {
-          api.sendMessage("⚠️ Ye UID already target hai.", threadID);
+          api.sendMessage("⚠️ ye chud rha phele se.", threadID);
         }
       }
 
       else if (cmd === "/cleartarget") {
         targetUIDs = [];
-        api.sendMessage("🚫 Target cleared.", threadID);
+        api.sendMessage("🤣ro gya", threadID);
       }
 
       else if (cmd === "/help") {
@@ -280,7 +280,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 /photo – Send photo/video after this; it will repeat every 30s
 /stopphoto – Stop repeating photo/video
 /forward – Reply kisi message pe kro, sabko forward ho jaega
-/target <uid> – Kisi UID ko target kr, msg pe random gali dega
+/target <uid> – aane to de chudega dikhte hi
 /cleartarget – Target hata dega
 /help – Show this help message🙂😁
         `;
