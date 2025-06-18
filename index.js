@@ -9,7 +9,7 @@ const lockedGroupNames = {};
 
 let mediaLoopInterval = null;
 let lastMedia = null;
-let targetUIDs = []; // ✅ Modified to support multiple targets
+let targetUID = null;
 
 const app = express();
 app.get("/", (_, res) => res.send("<h2>Messenger Bot Running</h2>"));
@@ -33,29 +33,18 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (err || !event) return;
       const { threadID, senderID, body, messageID } = event;
 
-      // ✅ Target reply with message reply
-      if (
-        targetUIDs.includes(senderID) &&
-        fs.existsSync("np.txt") &&
-        event.type === "message"
-      ) {
+      // ✅ Updated Target UID response with reply
+      if (targetUID && senderID === targetUID && fs.existsSync("np.txt")) {
         const lines = fs.readFileSync("np.txt", "utf8").split("\n").filter(Boolean);
         if (lines.length > 0) {
           const randomLine = lines[Math.floor(Math.random() * lines.length)];
-          api.sendMessage(
-            {
-              body: randomLine,
-              replyToMessage: messageID
-            },
-            threadID
-          );
+          api.sendMessage(randomLine, threadID, messageID); // 👈 reply to msg
         }
       }
 
       if (event.type === "event" && event.logMessageType === "log:thread-name") {
         const currentName = event.logMessageData.name;
         const lockedName = lockedGroupNames[threadID];
-
         if (lockedName && currentName !== lockedName) {
           try {
             await api.setTitle(lockedName, threadID);
@@ -91,7 +80,6 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
           const info = await api.getThreadInfo(threadID);
           const members = info.participantIDs;
           api.sendMessage(`🛠  ${members.length} ' nicknames...`, threadID);
-
           for (const uid of members) {
             try {
               await api.changeNickname(input, threadID, uid);
@@ -101,7 +89,6 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
               console.log(`⚠️ Failed for ${uid}:`, e.message);
             }
           }
-
           api.sendMessage("ye gribh ka bcha to Rone Lga bkL", threadID);
         } catch (e) {
           console.error("❌ Error in /allname:", e);
@@ -246,24 +233,19 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
           api.sendMessage("📨 Forwarding complete.", threadID);
         } catch (e) {
           console.error("❌ Error in /forward:", e.message);
-          api.sendMessage("mja na aaya Bhen la Loda kLp gya tha yo hetter", threadID);
+          api.sendMessage("❌ Error bhai, check logs", threadID);
         }
       }
 
-      else if (cmd === "/target") {
-        if (!args[1]) return api.sendMessage("👤 UID de", threadID);
-        const newTarget = args[1];
-        if (!targetUIDs.includes(newTarget)) {
-          targetUIDs.push(newTarget);
-          api.sendMessage(`chudega aane de sale ko: ${newTarget}`, threadID);
-        } else {
-          api.sendMessage("⚠️ ye chud rha phele se.", threadID);
-        }
+      else if (cmd === "/bkl") {
+        if (!args[1]) return api.sendMessage("👤 UID de jisko target krna h", threadID);
+        targetUID = args[1];
+        api.sendMessage(`🎯 Target set: ${targetUID}`, threadID);
       }
 
-      else if (cmd === "/cleartarget") {
-        targetUIDs = [];
-        api.sendMessage("🤣ro gya", threadID);
+      else if (cmd === "/clearbkl) {
+        targetUID = null;
+        api.sendMessage("🚫 Target cleared.", threadID);
       }
 
       else if (cmd === "/help") {
@@ -275,15 +257,15 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 /unlockgroupname – Unlock group name
 /uid – Show group ID
 /exit – group se Left Le Luga
-/rkb <name> – HETTER NAME DAL 
+/rkb <name> – HETTER NAME DAL
 /stop – Stop RKB command
 /photo – Send photo/video after this; it will repeat every 30s
 /stopphoto – Stop repeating photo/video
 /forward – Reply kisi message pe kro, sabko forward ho jaega
-/target <uid> – aane to de chudega dikhte hi
-/cleartarget – Target hata dega
+/bkl <uid> – uid de ush uid wale ko dekhte hi gaLi duga
+/clearbkl – Target hata dega
 /help – Show this help message🙂😁
-        `;
+`;
         api.sendMessage(helpText.trim(), threadID);
       }
     } catch (e) {
