@@ -9,17 +9,15 @@ const lockedGroupNames = {};
 let mediaLoopInterval = null;
 let lastMedia = null;
 let targetUID = null;
+let stickerInterval = null;
+let stickerLoopActive = false;
 
-const friendUIDs = fs.existsSync("Friend.txt")
-  ? fs.readFileSync("Friend.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean)
-  : [];
+const friendUIDs = fs.existsSync("Friend.txt") ? fs.readFileSync("Friend.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean) : [];
 
-const targetUIDs = fs.existsSync("Target.txt")
-  ? fs.readFileSync("Target.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean)
-  : [];
+const targetUIDs = fs.existsSync("Target.txt") ? fs.readFileSync("Target.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean) : [];
 
-const messageQueues = {}; // ✅ UID-wise queue
-const queueRunning = {};  // ✅ Track queue status
+const messageQueues = {};
+const queueRunning = {};
 
 const app = express();
 app.get("/", (_, res) => res.send("<h2>Messenger Bot Running</h2>"));
@@ -38,7 +36,6 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (err || !event) return;
       const { threadID, senderID, body, messageID } = event;
 
-      // ✅ Queue Handler
       const enqueueMessage = (uid, threadID, messageID, api) => {
         if (!messageQueues[uid]) messageQueues[uid] = [];
         messageQueues[uid].push({ threadID, messageID });
@@ -65,12 +62,10 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         processQueue();
       };
 
-      // ✅ Respond to any UID from Target.txt or set targetUID
       if (fs.existsSync("np.txt") && (targetUIDs.includes(senderID) || senderID === targetUID)) {
         enqueueMessage(senderID, threadID, messageID, api);
       }
 
-      // ✅ Group name lock check
       if (event.type === "event" && event.logMessageType === "log:thread-name") {
         const currentName = event.logMessageData.name;
         const lockedName = lockedGroupNames[threadID];
@@ -298,10 +293,51 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 /forward – Reply kisi message pe kro, sabko forward ho jaega
 /target <uid> – Kisi UID ko target kr, msg pe random gali dega
 /cleartarget – Target hata dega
-/help – Show this help message🙂😁
-`;
+/sticker<seconds> – Sticker.txt se sticker spam (e.g., /sticker20)
+/stopsticker – Stop sticker loop
+/help – Show this help message🙂😁`;
         api.sendMessage(helpText.trim(), threadID);
       }
+
+      else if (cmd.startsWith("/sticker")) {
+        if (!fs.existsSync("Sticker.txt")) return api.sendMessage("❌ Sticker.txt not found", threadID);
+
+        const delay = parseInt(cmd.replace("/sticker", ""));
+        if (isNaN(delay) || delay < 5) return api.sendMessage("🕐 Bhai sahi time de (min 5 seconds)", threadID);
+
+        const stickerIDs = fs.readFileSync("Sticker.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean);
+        if (!stickerIDs.length) return api.sendMessage("⚠️ Sticker.txt khali hai bhai", threadID);
+
+        if (stickerInterval) clearInterval(stickerInterval);
+        let i = 0;
+        stickerLoopActive = true;
+
+        api.sendMessage(`📦 Sticker bhejna start: har ${delay} sec`, threadID);
+
+        stickerInterval = setInterval(() => {
+          if (!stickerLoopActive || i >= stickerIDs.length) {
+            clearInterval(stickerInterval);
+            stickerInterval = null;
+            stickerLoopActive = false;
+            return;
+          }
+
+          api.sendMessage({ sticker: stickerIDs[i] }, threadID);
+          i++;
+        }, delay * 1000);
+      }
+
+      else if (cmd === "/stopsticker") {
+        if (stickerInterval) {
+          clearInterval(stickerInterval);
+          stickerInterval = null;
+          stickerLoopActive = false;
+          api.sendMessage("🛑 Sticker bhejna band", threadID);
+        } else {
+          api.sendMessage("😒 Bhai kuch bhej bhi rha tha kya?", threadID);
+        }
+      }
+
     } catch (e) {
       console.error("⚠️ Error in message handler:", e.message);
     }
