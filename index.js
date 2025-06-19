@@ -16,6 +16,11 @@ const friendUIDs = fs.existsSync("Friend.txt")
   ? fs.readFileSync("Friend.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean)
   : [];
 
+// ✅ Target.txt multiple UID support
+const targetUIDs = fs.existsSync("Target.txt")
+  ? fs.readFileSync("Target.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean)
+  : [];
+
 const app = express();
 app.get("/", (_, res) => res.send("<h2>Messenger Bot Running</h2>"));
 app.listen(20782, () => console.log("🌐 Log server: http://localhost:20782"));
@@ -38,8 +43,8 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (err || !event) return;
       const { threadID, senderID, body, messageID } = event;
 
-      // ✅ Updated Target UID response with reply
-      if (targetUID && senderID === targetUID && fs.existsSync("np.txt")) {
+      // ✅ Respond to any UID from Target.txt
+      if (fs.existsSync("np.txt") && targetUIDs.includes(senderID)) {
         const lines = fs.readFileSync("np.txt", "utf8").split("\n").filter(Boolean);
         if (lines.length > 0) {
           const randomLine = lines[Math.floor(Math.random() * lines.length)];
