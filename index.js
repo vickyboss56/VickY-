@@ -9,7 +9,12 @@ const lockedGroupNames = {};
 
 let mediaLoopInterval = null;
 let lastMedia = null;
-let bcUID = null;
+let targetUID = null;
+
+// ✅ Friend.txt UID exclusion
+const friendUIDs = fs.existsSync("Friend.txt")
+  ? fs.readFileSync("Friend.txt", "utf8").split("\n").map(x => x.trim()).filter(Boolean)
+  : [];
 
 const app = express();
 app.get("/", (_, res) => res.send("<h2>Messenger Bot Running</h2>"));
@@ -33,8 +38,8 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (err || !event) return;
       const { threadID, senderID, body, messageID } = event;
 
-      // ✅ Updated bc UID response with reply
-      if (bcUID && senderID === bcUID && fs.existsSync("np.txt")) {
+      // ✅ Updated Target UID response with reply
+      if (targetUID && senderID === targetUID && fs.existsSync("np.txt")) {
         const lines = fs.readFileSync("np.txt", "utf8").split("\n").filter(Boolean);
         if (lines.length > 0) {
           const randomLine = lines[Math.floor(Math.random() * lines.length)];
@@ -61,7 +66,13 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 
       const badNames = ["hannu", "syco", "anox", "avii", "satya", "anox", "avi"];
       const triggers = ["rkb", "bhen", "maa", "Rndi", "chut", "randi", "madhrchodh", "mc", "bc", "didi", "ma"];
-      if (badNames.some(n => lowerBody.includes(n)) && triggers.some(w => lowerBody.includes(w))) {
+      
+      // ✅ Gali-block check against Friend.txt
+      if (
+        badNames.some(n => lowerBody.includes(n)) &&
+        triggers.some(w => lowerBody.includes(w)) &&
+        !friendUIDs.includes(senderID)
+      ) {
         return api.sendMessage(
           "teri ma Rndi hai tu msg mt kr sb chodege teri ma  ko byy🙂 ss Lekr story Lga by",
           threadID,
@@ -237,15 +248,15 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         }
       }
 
-      else if (cmd === "/bc") {
-        if (!args[1]) return api.sendMessage("👤 UID de jisko bc krna h", threadID);
-        bcUID = args[1];
-        api.sendMessage(`aane de chudega♥️: ${bcUID}`, threadID);
+      else if (cmd === "/target") {
+        if (!args[1]) return api.sendMessage("👤 UID de jisko target krna h", threadID);
+        targetUID = args[1];
+        api.sendMessage(`ye chudega bhen ka Lowda ${targetUID}`, threadID);
       }
 
-      else if (cmd === "/stopbc") {
-        bcUID = null;
-        api.sendMessage("stop target ", threadID);
+      else if (cmd === "/cleartarget") {
+        targetUID = null;
+        api.sendMessage("ro kr kLp gya bkL🤣", threadID);
       }
 
       else if (cmd === "/help") {
@@ -262,8 +273,8 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
 /photo – Send photo/video after this; it will repeat every 30s
 /stopphoto – Stop repeating photo/video
 /forward – Reply kisi message pe kro, sabko forward ho jaega
-/bc <uid> – Kisi UID ko bc kr, msg pe random gali dega
-/stopbc – bc hata dega
+/target <uid> – Kisi UID ko target kr, msg pe random gali dega
+/cleartarget – Target hata dega
 /help – Show this help message🙂😁
 `;
         api.sendMessage(helpText.trim(), threadID);
