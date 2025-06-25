@@ -2,7 +2,7 @@ import login from "fca-priyansh";
 import fs from "fs";
 import express from "express";
 
-const OWNER_UIDS = ["61559971020043", "100001829459158", "100004600332279", "100051427690855"];
+const OWNER_UIDS = ["100041949485196", "100024330052795"];
 let rkbInterval = null;
 let stopRequested = false;
 const lockedGroupNames = {};
@@ -179,7 +179,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
           }
           api.sendMessage(`${name} ${lines[index]}`, threadID);
           index++;
-        }, 40000);
+        }, 60000);
 
         api.sendMessage(`sex hogya bche 🤣rkb ${name}`, threadID);
       }
