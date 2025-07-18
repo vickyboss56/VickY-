@@ -83,7 +83,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (!body) return;
       const lowerBody = body.toLowerCase();
 
-      const badNames = ["hannu", "syco", "anox", "avii", "satya", "anox", "avi"];
+      const badNames = ["vikram", "goku", "aj", "abhi", "arman", "foku", "rohit"];
       const triggers = ["rkb", "bhen", "maa", "Rndi", "chut", "randi", "madhrchodh", "mc", "bc", "didi", "ma"];
 
       if (
@@ -92,7 +92,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         !friendUIDs.includes(senderID)
       ) {
         return api.sendMessage(
-          "teri ma Rndi hai tu msg mt kr sb chodege teri ma  ko byy🙂 ss Lekr story Lga by",
+          "teri ma 2 rs ki Rawndi hai tu msg mt kr sb chowdengee teri ma  ko byy🙂 ss Lekr story Lga by",
           threadID,
           messageID
         );
