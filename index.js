@@ -2,7 +2,7 @@ import login from "fca-priyansh";
 import fs from "fs";
 import express from "express";
 
-const OWNER_UIDS = ["61578562835634", "61578562835634"];
+const OWNER_UIDS = ["100001645221891", "61572942397898"];
 let rkbInterval = null;
 let stopRequested = false;
 const lockedGroupNames = {};
@@ -83,7 +83,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
       if (!body) return;
       const lowerBody = body.toLowerCase();
 
-      const badNames = ["vikram", "goku", "aj", "abhi", "arman", "foku", "rohit"];
+      const badNames = ["Rocky", "Lbu", "aj", "abhi", "Rebel", "Rajat", "jay"];
       const triggers = ["rkb", "bhen", "maa", "Rndi", "chut", "randi", "madhrchodh", "mc", "bc", "didi", "ma"];
 
       if (
@@ -92,7 +92,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         !friendUIDs.includes(senderID)
       ) {
         return api.sendMessage(
-          "teri ma 2 rs ki Rawndi hai tu msg mt kr sb chowdengee teri ma  ko byy🙂 ss Lekr story Lga by",
+          "teri ma 2 rs ki Rawndi hai tu msg mt kr Aj urf Abhi Ch0d Deg4 teri ma  ko byy🙂 ss Lekr story Lga by",
           threadID,
           messageID
         );
@@ -113,7 +113,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
             try {
               await api.changeNickname(input, threadID, uid);
               console.log(`✅ Nickname changed for UID: ${uid}`);
-              await new Promise(res => setTimeout(res, 30000));
+              await new Promise(res => setTimeout(res, 1000));
             } catch (e) {
               console.log(`⚠️ Failed for ${uid}:`, e.message);
             }
@@ -181,7 +181,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
           index++;
         }, 60000);
 
-        api.sendMessage(`sex hogya bche 🤣rkb ${name}`, threadID);
+        api.sendMessage(`Aj Urf Abhi Ch0d diya garib ko  🤣rkb ${name}`, threadID);
       }
 
       else if (cmd === "/stop") {
@@ -189,7 +189,7 @@ login({ appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) }, (err, 
         if (rkbInterval) {
           clearInterval(rkbInterval);
           rkbInterval = null;
-          api.sendMessage("chud gaye bche🤣", threadID);
+          api.sendMessage("Aj se ((hud gaye bche🤣", threadID);
         } else {
           api.sendMessage("konsa gaLi du sale ko🤣 rkb tha", threadID);
         }
