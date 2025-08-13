@@ -1,26 +1,4 @@
-[
-    {
-        "key": "sb",
-        "value": "906OaInshijWwIubAAbbpsQ1",
-        "domain": "facebook.com",
-        "path": "/",
-        "hostOnly": false,
-        "creation": "2025-08-11T02:52:37.218Z",
-        "lastAccessed": "2025-08-11T02:52:37.218Z"
-    },
-    {
-        "key": "datr",
-        "value": "1FqZaOlDI5ICsStfyH6kSyvL",
-        "domain": "facebook.com",
-        "path": "/",
-        "hostOnly": false,
-        "creation": "2025-08-11T02:52:37.218Z",
-        "lastAccessed": "2025-08-11T02:52:37.218Z"
-    },
-    {
-        "key": "dpr",
-        "value": "2.3721659183502197",
-        "domain": "facebook.com",
+
         "path": "/",
         "hostOnly": false,
         "creation": "2025-08-11T02:52:37.218Z",
